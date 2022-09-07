@@ -26,7 +26,7 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   const Lottery = await hre.ethers.getContractFactory("Lottery");
-  const lottery = await Lottery.deploy('mon premier message');
+  const lottery = await Lottery.deploy();
 
   Lottery.deployed();
 
