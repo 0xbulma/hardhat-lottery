@@ -2,7 +2,36 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import { useEffect, useState, useCallback } from 'react';
 
-export function useAccountChanges(handler) {
+import WalletConnectProvider from '@walletconnect/web3-provider';
+import { providers } from 'ethers';
+
+export function chainIdHelper(chainId) {
+  switch (chainId) {
+    case '0x5':
+      return 'goerli';
+    default:
+      return 'Wrong Chain please connect to Goerli';
+  }
+}
+
+export function useCheckConnectionOnLoad(handler) {
+  useEffect(() => {
+    const asynFn = async () => {
+      const isConnected = await ethereum.request({ method: 'eth_accounts' });
+
+      if (isConnected.length > 0) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        async function fetchInfo() {
+          handler(await getWalletInfo(provider));
+        }
+        fetchInfo();
+      }
+    };
+    asynFn();
+  });
+}
+
+export function useAccountChangesListener(handler) {
   useEffect(() => {
     window.ethereum.on('accountsChanged', handler);
     return () => {
@@ -11,7 +40,7 @@ export function useAccountChanges(handler) {
   }, [handler]);
 }
 
-export function useChainChanges(handler) {
+export function useChainChangesListener(handler) {
   useEffect(() => {
     window.ethereum.on('chainChanged', handler);
     return () => {
@@ -20,24 +49,37 @@ export function useChainChanges(handler) {
   }, [handler]);
 }
 
+export function useDisconnectListener(handler) {
+  useEffect(() => {
+    window.ethereum.on('disconnect', handler);
+    return () => {
+      window.ethereum.removeListener('disconnect', handler);
+    };
+  }, [handler]);
+}
+
+export async function getWalletInfo(provider) {
+  const { name } = await provider.getNetwork();
+  const signer = provider.getSigner();
+  let address = await signer.getAddress();
+  let balance = await signer.getBalance();
+
+    const res = {
+    provider,
+    address,
+    signer,
+    balance : ethers.utils.formatEther(balance),
+    chainName:
+      name === 'goerli' ? name : 'Wrong Chain please connect to Goerli',
+  };
+
+  return res;
+}
+
 export async function connect() {
-  const chainId = await ethereum.request({ method: 'eth_chainId' });
-  const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  // MetaMask requires requesting permission to connect users accounts
+  await provider.send('eth_requestAccounts', []);
 
-
-  return ethereum
-    .request({ method: 'eth_requestAccounts' })
-    .then(res => {
-      console.log(res);
-      return res[0];
-    })
-    .catch(err => {
-      if (err.code === 4001) {
-        // EIP-1193 userRejectedRequest error
-        // If this happens, the user rejected the connection request.
-        console.log('Please connect to MetaMask.');
-      } else {
-        console.error(err);
-      }
-    });
+  return await getWalletInfo(provider);
 }

@@ -2,24 +2,48 @@ import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/Home.module.css';
 import { ethers } from 'ethers';
-import { connect, useChainChanges } from '../libs/metamaskConnector';
-import { useAccountChanges } from '../libs/metamaskConnector';
+import {
+  connect,
+  useChainChangesListener,
+  useAccountChangesListener,
+  useCheckConnectionOnLoad,
+  useDisconnectListener,
+  chainIdHelper,
+} from '../libs/metamaskConnector';
 
 import { useState } from 'react';
 
 export default function Home() {
   const [address, setAddress] = useState();
-  const [network, setNetwork] = useState();
   const [provider, setProvider] = useState();
-
+  const [signer, setSigner] = useState();
+  const [balance, setBalance] = useState();
+  const [chainName, setChainName] = useState();
 
   const connectHandler = async () => {
-    const connectedAddress = await connect();
-    setAddress(connectedAddress);
+    const { address, chainName, balance, provider, signer } = await connect();
+    setAddress(address);
+    setChainName(chainName);
+    setProvider(provider);
+    setBalance(balance);
   };
 
-  useAccountChanges((accounts) => {setAddress(accounts[0]);})
-  useChainChanges((chainId) => {setNetwork(chainId);});
+  useCheckConnectionOnLoad(({ address, chainName, balance, provider, signer }) => {
+    setAddress(address);
+    setChainName(chainName);
+    setProvider(provider);
+    setBalance(balance);
+  });
+
+  useAccountChangesListener(accounts => {
+    setAddress(accounts[0]);
+  });
+
+  useChainChangesListener(chainId => {
+    setChainName(chainIdHelper(chainId));
+  });
+
+  useDisconnectListener((error) => console.log(error));
 
   return (
     <div className={styles.container}>
@@ -36,8 +60,12 @@ export default function Home() {
           <span>{address}</span>
         </p>
         <p>
+          <span>Balance: </span>
+          <span>{balance}</span>
+        </p>
+        <p>
           <span>Network: </span>
-          <span>{network}</span>
+          <span>{chainName}</span>
         </p>
       </main>
 
