@@ -149,19 +149,23 @@ describe('Lottery Contract', function () {
         await hardhatLottery.connect(player).enter({ value: weiValue });
       }
 
+      const initialBalance = await hre.ethers.provider.getBalance(hardhatLottery.address);
+
       await hardhatLottery.connect(accounts[0]).pickWinner();
 
       const transferEvent = await hardhatLottery.queryFilter('moneySent');
       const winner = transferEvent[0].args[1];
       const amount = transferEvent[0].args[2];
-
+      
       // check transfer event
       expect(amount).to.equal(weiValue.mul(players.length));
+      expect(initialBalance).to.equal(weiValue.mul(players.length));
       expect(players.map(player => player.address)).to.include(winner);
 
       // reset pool
       expect(await hardhatLottery.getPlayers()).to.be.empty;
       expect(await hardhatLottery.prizePool()).to.equal(0);
+      expect(await hre.ethers.provider.getBalance(hardhatLottery.address)).to.equal(0);
     });
   });
 });
