@@ -30,6 +30,10 @@ async function main() {
 
   Lottery.deployed();
 
+  await hre.run("verify:verify", {
+    address: Lottery.address
+  });
+
   console.log("Contract address:", Lottery.address);
 }
 

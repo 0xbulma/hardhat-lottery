@@ -5,10 +5,14 @@ pragma solidity ^0.8.9;
 contract Lottery {
     address public manager;
     address payable[] public players;
+    uint public prizePool;
+    
 
     constructor() {
         manager = msg.sender;
     }
+
+    event moneySent(address _from, address _to, uint _amount);
 
     function getPlayers() public view returns (address payable[] memory) {
         return players;
@@ -28,6 +32,7 @@ contract Lottery {
             "Please enter with 0.01 Ether at minimum"
         );
         players.push(payable(msg.sender));
+        prizePool = address(this).balance;
     }
 
     function random() private view returns (uint256) {
@@ -41,10 +46,15 @@ contract Lottery {
     }
 
     function pickWinner() public restricted {
+        require(players.length > 0 , 'No players');
+
         uint index = random() % players.length;
-        players[index].transfer(address(this).balance);
+        players[index].transfer(prizePool);
+
+        emit moneySent(msg.sender, players[index], prizePool);
         // players = new address payable[](0);
         delete players;
+        delete prizePool;
     }
 
     modifier restricted() {
