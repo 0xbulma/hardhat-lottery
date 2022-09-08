@@ -28,13 +28,15 @@ async function main() {
   const Lottery = await hre.ethers.getContractFactory("Lottery");
   const lottery = await Lottery.deploy();
 
-  Lottery.deployed();
+  lottery.deployed();
 
-  await hre.run("verify:verify", {
-    address: Lottery.address
-  });
-
-  console.log("Contract address:", Lottery.address);
+  if (network.name !== "hardhat") {
+    await hre.run("verify:verify", {
+      address: lottery.address
+    });
+  }
+ 
+  console.log("Contract address:", lottery.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
