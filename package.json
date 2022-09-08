@@ -7,11 +7,7 @@
     "test": "hardhat test",
     "compile": "npx hardhat compile",
     "deploy-local": "npx hardhat run scripts/deploy.js --network hardhat",
-    "deploy-goerli": "npx hardhat run scripts/deploy.js --network goerli",
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "deploy-goerli": "npx hardhat run scripts/deploy.js --network goerli"
   },
   "author": "",
   "license": "ISC",
@@ -22,14 +18,9 @@
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "ethers": "^5.7.0",
-    "hardhat": "^2.11.1",
-    "eslint": "8.23.0",
-    "eslint-config-next": "12.2.5"
+    "hardhat": "^2.11.1"
   },
   "dependencies": {
-    "dotenv": "^16.0.2",
-    "next": "12.2.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "dotenv": "^16.0.2"
   }
 }

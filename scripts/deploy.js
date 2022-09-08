@@ -5,6 +5,9 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const fs = require("fs");
+const path = require("path");
+const { artifacts } = require('hardhat');
 
 async function main() {
 
@@ -37,6 +40,29 @@ async function main() {
   }
  
   console.log("Contract address:", lottery.address);
+
+  saveFrontendFiles(lottery);
+}
+
+function saveFrontendFiles(lottery) {
+  
+  const contractsDir = path.join(__dirname, "..", "front", "contracts");
+
+  if (!fs.existsSync(contractsDir)) {
+    fs.mkdirSync(contractsDir);
+  }
+
+  fs.writeFileSync(
+    path.join(contractsDir, "contract-address.json"),
+    JSON.stringify({ Lottery: lottery.address }, undefined, 2)
+  );
+
+  const LotteryArtifact = artifacts.readArtifactSync("Lottery");
+
+  fs.writeFileSync(
+    path.join(contractsDir, "Lottery.json"),
+    JSON.stringify(LotteryArtifact, null, 2)
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
